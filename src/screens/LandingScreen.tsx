@@ -32,7 +32,13 @@ const LandingScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" backgroundColor="#000000" />
       
-      {/* Full Screen Background Image */}
+      {/* Full Screen Background Image 
+          ResizeMode options you can try:
+          - "cover": Fills entire screen, may crop image
+          - "contain": Shows full image, may have empty space
+          - "stretch": Stretches to fit exactly, may distort image (current)
+          - "center": Centers image at original size
+      */}
       <Image
         source={require('../assets/landingimage.jpg')}
         style={styles.backgroundImage}
@@ -42,15 +48,15 @@ const LandingScreen: React.FC = () => {
       {/* Dark Overlay */}
       <View style={styles.overlay} />
       
-      {/* Coffee beans scattered effect */}
-      <View style={[styles.bean, styles.bean1]} />
-      <View style={[styles.bean, styles.bean2]} />
-      <View style={[styles.bean, styles.bean3]} />
-      <View style={[styles.bean, styles.bean4]} />
-      <View style={[styles.bean, styles.bean5]} />
-      <View style={[styles.bean, styles.bean6]} />
-      <View style={[styles.bean, styles.bean7]} />
-      <View style={[styles.bean, styles.bean8]} />
+      {/* Spice scattered effect */}
+      <View style={[styles.spice, styles.spice1]} />
+      <View style={[styles.spice, styles.spice2]} />
+      <View style={[styles.spice, styles.spice3]} />
+      <View style={[styles.spice, styles.spice4]} />
+      <View style={[styles.spice, styles.spice5]} />
+      <View style={[styles.spice, styles.spice6]} />
+      <View style={[styles.spice, styles.spice7]} />
+      <View style={[styles.spice, styles.spice8]} />
 
       {/* Spacer to push content to bottom */}
       <View style={styles.spacer} />
@@ -59,12 +65,12 @@ const LandingScreen: React.FC = () => {
       <View style={styles.contentContainer}>
         {/* Main Heading */}
         <Text style={styles.mainHeading}>
-          Fall in Love with Coffee in Blissful Delight!
+          Are you starving?
         </Text>
 
         {/* Subtitle */}
         <Text style={styles.subtitle}>
-          Welcome to our cozy coffee corner, where every cup is a delightful for you.
+          Within a few clicks, find meals that are accessible near you
         </Text>
       </View>
 
@@ -93,8 +99,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    width: '100%',
-    height: '100%',
+    width: width,
+    height: height,
+    backgroundColor: '#000000', // Fallback color while image loads
   },
   overlay: {
     position: 'absolute',
@@ -104,64 +111,64 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
-  // Coffee bean scatter effects
-  bean: {
+  // Spice scatter effects
+  spice: {
     position: 'absolute',
-    backgroundColor: '#8B4513',
+    backgroundColor: '#D2691E',
     borderRadius: 50,
     opacity: 0.8,
     zIndex: 2,
   },
-  bean1: {
+  spice1: {
     width: 8,
     height: 12,
     top: '15%',
     left: '20%',
     transform: [{ rotate: '15deg' }],
   },
-  bean2: {
+  spice2: {
     width: 6,
     height: 10,
     top: '20%',
     right: '25%',
     transform: [{ rotate: '-20deg' }],
   },
-  bean3: {
+  spice3: {
     width: 10,
     height: 14,
     top: '25%',
     left: '15%',
     transform: [{ rotate: '45deg' }],
   },
-  bean4: {
+  spice4: {
     width: 7,
     height: 11,
     top: '30%',
     right: '20%',
     transform: [{ rotate: '-10deg' }],
   },
-  bean5: {
+  spice5: {
     width: 9,
     height: 13,
     bottom: '35%',
     left: '18%',
     transform: [{ rotate: '30deg' }],
   },
-  bean6: {
+  spice6: {
     width: 6,
     height: 9,
     bottom: '40%',
     right: '22%',
     transform: [{ rotate: '-25deg' }],
   },
-  bean7: {
+  spice7: {
     width: 8,
     height: 11,
     bottom: '30%',
     left: '25%',
     transform: [{ rotate: '60deg' }],
   },
-  bean8: {
+  spice8: {
     width: 7,
     height: 10,
     bottom: '25%',

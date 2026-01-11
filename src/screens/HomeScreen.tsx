@@ -17,6 +17,9 @@ import type { RootStackParamList } from '../navigation/types';
 import { PromoCard, CoffeeCard, CategoryTabs } from '../components';
 import Geolocation from 'react-native-geolocation-service';
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { addToCart, type Dish } from '../redux/slices/cartSlice';
 
 const { width } = Dimensions.get('window');
 
@@ -25,7 +28,7 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   'Home'
 >;
 
-interface Coffee {
+interface Dish {
   id: string;
   name: string;
   type: string;
@@ -36,7 +39,9 @@ interface Coffee {
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const [selectedCategory, setSelectedCategory] = useState('All Coffee');
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state: RootState) => state.cart.totalItems);
+  const [selectedCategory, setSelectedCategory] = useState('All Dishes');
   const [searchText, setSearchText] = useState('');
   const [location, setLocation] = useState('Location');
   const [locationDetails, setLocationDetails] = useState('Fetching location...');
@@ -111,42 +116,66 @@ const HomeScreen: React.FC = () => {
     navigation.navigate('Profile');
   };
 
-  const coffees: Coffee[] = [
+  const handleAddToCart = (dish: Dish) => {
+    // Convert price string to number for Redux
+    const dishForCart = {
+      ...dish,
+      price: parseFloat(dish.price.replace('$', '')),
+    };
+    
+    dispatch(addToCart(dishForCart));
+    
+    // Show success feedback
+    Alert.alert(
+      'Added to Cart! 🛒',
+      `${dish.name} has been added to your cart.`,
+      [
+        { text: 'Continue Shopping', style: 'default' },
+        { 
+          text: 'View Cart', 
+          style: 'default',
+          onPress: () => navigation.navigate('Cart')
+        }
+      ]
+    );
+  };
+
+  const dishes: Dish[] = [
     {
       id: '1',
-      name: 'Caffe Mocha',
-      type: 'Deep Foam',
-      price: '$4.53',
+      name: 'Chicken Biryani',
+      type: 'Hyderabadi Style',
+      price: '$12.99',
       rating: 4.8,
-      image: require('../assets/coffee4.jpg'),
+      image: require('../assets/biryani1.jpg'),
     },
     {
       id: '2',
-      name: 'Flat White',
-      type: 'Espresso',
-      price: '$3.53',
-      rating: 4.8,
-      image: require('../assets/coffee2.jpg'),
+      name: 'Mutton Dum Biryani',
+      type: 'Lucknowi Style',
+      price: '$15.99',
+      rating: 4.9,
+      image: require('../assets/biryani2.jpg'),
     },
     {
       id: '3',
-      name: 'Americano',
-      type: 'Strong & Bold',
-      price: '$3.53',
-      rating: 4.8,
-      image: require('../assets/coffee3.jpg'),
+      name: 'chicken Dum Biryani',
+      type: 'Aromatic Basmati',
+      price: '$9.99',
+      rating: 4.7,
+      image: require('../assets/biryani3.jpg'),
     },
     {
       id: '4',
-      name: 'Cappuccino',
-      type: 'Rich Cream',
-      price: '$4.53',
+      name: 'Hyderabad Biryani',
+      type: 'Coastal Special',
+      price: '$16.99',
       rating: 4.8,
-      image: require('../assets/coffee4.jpg'),
+      image: require('../assets/biryani4.jpg'),
     },
   ];
 
-  const categories = ['All Coffee', 'Machiato', 'Latte', 'Americ'];
+  const categories = ['All Dishes', 'Mandi', 'Biryani', 'Curry', 'Tandoor'];
 
   return (
     <View style={styles.container}>
@@ -167,6 +196,12 @@ const HomeScreen: React.FC = () => {
           {/* Profile Icon */}
           <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
             <Icon name="account" size={24} color="#1a1a1a" />
+            {/* Cart Badge */}
+            {cartItems > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cartItems}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -176,7 +211,7 @@ const HomeScreen: React.FC = () => {
             <Icon name="magnify" size={20} color="#888" />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search coffee"
+              placeholder="Search dishes"
               placeholderTextColor="#888"
               value={searchText}
               onChangeText={setSearchText}
@@ -199,15 +234,31 @@ const HomeScreen: React.FC = () => {
             onSelectCategory={setSelectedCategory}
           />
 
-          {/* Coffee Grid */}
+          {/* Dish Grid */}
           <View style={styles.gridContainer}>
             <View style={styles.row}>
-              <CoffeeCard coffee={coffees[0]} style={styles.coffee} />
-              <CoffeeCard coffee={coffees[1]} style={styles.coffee} />
+              <CoffeeCard 
+                coffee={dishes[0]} 
+                style={styles.coffee} 
+                onAddToCart={handleAddToCart}
+              />
+              <CoffeeCard 
+                coffee={dishes[1]} 
+                style={styles.coffee} 
+                onAddToCart={handleAddToCart}
+              />
             </View>
             <View style={styles.row}>
-              <CoffeeCard coffee={coffees[2]} style={styles.coffee} />
-              <CoffeeCard coffee={coffees[3]} style={styles.coffee} />
+              <CoffeeCard 
+                coffee={dishes[2]} 
+                style={styles.coffee} 
+                onAddToCart={handleAddToCart}
+              />
+              <CoffeeCard 
+                coffee={dishes[3]} 
+                style={styles.coffee} 
+                onAddToCart={handleAddToCart}
+              />
             </View>
           </View>
 
@@ -274,6 +325,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#D17760',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#1a1a1a',
+  },
+  cartBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   searchSection: {
     paddingHorizontal: 20,

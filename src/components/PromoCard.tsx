@@ -19,11 +19,11 @@ const PromoCard: React.FC = () => {
           </Text>
         </View>
 
-        {/* Coffee Image - Right Side */}
+        {/* Biryani Image - Right Side */}
         <View style={styles.imageContainer}>
           <Image
-            source={require('../assets/promo-coffee.jpg')}
-            style={styles.coffeeImage}
+            source={require('../assets/promo-biryani.jpg')}
+            style={styles.biryaniImage}
             resizeMode="contain"
           />
         </View>
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  coffeeImage: {
+  biryaniImage: {
     width: '100%',
     height: '100%',
   },

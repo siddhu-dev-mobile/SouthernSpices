@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-interface Coffee {
+interface Dish {
   id: string;
   name: string;
   type: string;
@@ -19,11 +19,18 @@ interface Coffee {
 }
 
 interface CoffeeCardProps {
-  coffee: Coffee;
+  coffee: Dish;
   style?: ViewStyle;
+  onAddToCart?: (dish: Dish) => void;
 }
 
-const CoffeeCard: React.FC<CoffeeCardProps> = ({ coffee, style }) => {
+const CoffeeCard: React.FC<CoffeeCardProps> = ({ coffee, style, onAddToCart }) => {
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(coffee);
+    }
+  };
+
   return (
     <View style={[styles.container, style]}>
       {/* Image Container */}
@@ -44,7 +51,11 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ coffee, style }) => {
         {/* Price and Add Button */}
         <View style={styles.footer}>
           <Text style={styles.price}>{coffee.price}</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={handleAddToCart}
+            activeOpacity={0.7}
+          >
             <Icon name="plus" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
