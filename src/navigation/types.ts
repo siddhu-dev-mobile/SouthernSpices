@@ -1,4 +1,5 @@
 export type RootStackParamList = {
+  Landing: undefined;
   Home: undefined;
   Product: { productId: string };
   Cart: undefined;
@@ -9,6 +10,7 @@ export type RootStackParamList = {
 
 export type BottomTabParamList = {
   Home: undefined;
+  Favorites: undefined;
   Cart: undefined;
-  Profile: undefined;
+  Notifications: undefined;
 };
