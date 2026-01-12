@@ -8,31 +8,35 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-interface Dish {
-  id: string;
-  name: string;
-  type: string;
-  price: string;
-  rating: number;
-  image: any;
-}
+import { MenuItem } from '../constants/menuData';
 
 interface CoffeeCardProps {
-  coffee: Dish;
+  coffee: MenuItem;
   style?: ViewStyle;
-  onAddToCart?: (dish: Dish) => void;
+  onAddToCart?: (dish: MenuItem) => void;
+  onPress?: (dish: MenuItem) => void;
 }
 
-const CoffeeCard: React.FC<CoffeeCardProps> = ({ coffee, style, onAddToCart }) => {
-  const handleAddToCart = () => {
+const CoffeeCard: React.FC<CoffeeCardProps> = ({ coffee, style, onAddToCart, onPress }) => {
+  const handleAddToCart = (e: any) => {
+    e.stopPropagation(); // Prevent card press when adding to cart
     if (onAddToCart) {
       onAddToCart(coffee);
     }
   };
 
+  const handleCardPress = () => {
+    if (onPress) {
+      onPress(coffee);
+    }
+  };
+
   return (
-    <View style={[styles.container, style]}>
+    <TouchableOpacity 
+      style={[styles.container, style]}
+      onPress={handleCardPress}
+      activeOpacity={0.7}
+    >
       {/* Image Container */}
       <View style={styles.imageContainer}>
         <Image source={coffee.image} style={styles.image} resizeMode="cover" />
@@ -60,7 +64,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ coffee, style, onAddToCart }) =
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

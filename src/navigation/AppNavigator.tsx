@@ -16,6 +16,7 @@ import {
   RegisterScreen,
   LandingScreen,
 } from '../screens';
+import OTPVerificationScreen from '../screens/OTPVerificationScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -129,17 +130,12 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="Profile" 
           component={ProfileScreen}
-          options={{ 
-            title: 'Profile',
-            headerStyle: {
-              backgroundColor: '#1a1a1a',
-            },
-            headerTintColor: '#fff',
-          }} 
+         options={{ headerShown: false }} 
         />
-        <Stack.Screen name="Product" component={ProductScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Product" component={ProductScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

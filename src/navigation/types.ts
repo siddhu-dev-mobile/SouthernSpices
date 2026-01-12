@@ -1,11 +1,14 @@
+import { MenuItem } from '../constants/menuData';
+
 export type RootStackParamList = {
   Landing: undefined;
   Home: undefined;
-  Product: { productId: string };
+  Product: { dish: MenuItem };
   Cart: undefined;
   Profile: undefined;
   Login: undefined;
   Register: undefined;
+  OTPVerification: { email: string };
 };
 
 export type BottomTabParamList = {

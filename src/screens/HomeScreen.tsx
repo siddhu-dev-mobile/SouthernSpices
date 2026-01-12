@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
   Platform,
+  Animated,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
@@ -20,6 +21,8 @@ import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { addToCart, type Dish } from '../redux/slices/cartSlice';
+import { FOOD_CATEGORIES, DEFAULT_CATEGORY } from '../constants/categories';
+import { MENU_ITEMS, type MenuItem } from '../constants/menuData';
 
 const { width } = Dimensions.get('window');
 
@@ -28,27 +31,92 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   'Home'
 >;
 
-interface Dish {
-  id: string;
-  name: string;
-  type: string;
-  price: string;
-  rating: number;
-  image: any;
-}
-
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart.totalItems);
-  const [selectedCategory, setSelectedCategory] = useState('All Dishes');
+  
+  const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
   const [searchText, setSearchText] = useState('');
   const [location, setLocation] = useState('Location');
   const [locationDetails, setLocationDetails] = useState('Fetching location...');
+  const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isSearching, setIsSearching] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     requestLocationPermission();
+    filterItems();
   }, []);
+
+  useEffect(() => {
+    filterItems();
+  }, [selectedCategory, searchText]);
+
+  // Dynamic placeholder effect with smooth animation
+  useEffect(() => {
+    const startPlaceholderAnimation = () => {
+      intervalRef.current = setInterval(() => {
+        if (!isSearching) {
+          // Subtle pulse effect
+          Animated.sequence([
+            Animated.timing(fadeAnim, {
+              toValue: 0.6,
+              duration: 200,
+              useNativeDriver: false,
+            }),
+            Animated.timing(fadeAnim, {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: false,
+            }),
+          ]).start();
+          
+          // Change placeholder after animation starts
+          setTimeout(() => {
+            setPlaceholderIndex((prevIndex) => 
+              (prevIndex + 1) % FOOD_CATEGORIES.length
+            );
+          }, 100);
+        }
+      }, 5000); // Change every 5 seconds
+    };
+
+    if (!isSearching) {
+      startPlaceholderAnimation();
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [fadeAnim, isSearching]);
+
+  const getDynamicPlaceholder = () => {
+    const category = FOOD_CATEGORIES[placeholderIndex];
+    return `Search ${category}...`;
+  };
+
+  const filterItems = () => {
+    let items = MENU_ITEMS.filter(item => item.category === selectedCategory);
+    
+    if (searchText.trim()) {
+      items = items.filter(item =>
+        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.type.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.description?.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+    
+    setFilteredItems(items);
+  };
 
   const requestLocationPermission = async () => {
     try {
@@ -116,8 +184,8 @@ const HomeScreen: React.FC = () => {
     navigation.navigate('Profile');
   };
 
-  const handleAddToCart = (dish: Dish) => {
-    // Convert price string to number for Redux
+  const handleAddToCart = (dish: MenuItem) => {
+    // Convert MenuItem to Dish format for cart
     const dishForCart = {
       ...dish,
       price: parseFloat(dish.price.replace('$', '')),
@@ -140,42 +208,18 @@ const HomeScreen: React.FC = () => {
     );
   };
 
-  const dishes: Dish[] = [
-    {
-      id: '1',
-      name: 'Chicken Biryani',
-      type: 'Hyderabadi Style',
-      price: '$12.99',
-      rating: 4.8,
-      image: require('../assets/biryani1.jpg'),
-    },
-    {
-      id: '2',
-      name: 'Mutton Dum Biryani',
-      type: 'Lucknowi Style',
-      price: '$15.99',
-      rating: 4.9,
-      image: require('../assets/biryani2.jpg'),
-    },
-    {
-      id: '3',
-      name: 'chicken Dum Biryani',
-      type: 'Aromatic Basmati',
-      price: '$9.99',
-      rating: 4.7,
-      image: require('../assets/biryani3.jpg'),
-    },
-    {
-      id: '4',
-      name: 'Hyderabad Biryani',
-      type: 'Coastal Special',
-      price: '$16.99',
-      rating: 4.8,
-      image: require('../assets/biryani4.jpg'),
-    },
-  ];
+  const handleDishPress = (dish: MenuItem) => {
+    navigation.navigate('Product', { dish });
+  };
 
-  const categories = ['All Dishes', 'Mandi', 'Biryani', 'Curry', 'Tandoor'];
+  const handleSearchChange = (text: string) => {
+    setSearchText(text);
+    setIsSearching(text.length > 0);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
 
   return (
     <View style={styles.container}>
@@ -207,16 +251,16 @@ const HomeScreen: React.FC = () => {
 
         {/* Search Bar */}
         <View style={styles.searchSection}>
-          <View style={styles.searchContainer}>
+          <Animated.View style={[styles.searchContainer, { opacity: fadeAnim }]}>
             <Icon name="magnify" size={20} color="#888" />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search dishes"
+              placeholder={getDynamicPlaceholder()}
               placeholderTextColor="#888"
               value={searchText}
-              onChangeText={setSearchText}
+              onChangeText={handleSearchChange}
             />
-          </View>
+          </Animated.View>
           <TouchableOpacity style={styles.filterButton}>
             <Icon name="tune-vertical" size={20} color="#fff" />
           </TouchableOpacity>
@@ -229,37 +273,33 @@ const HomeScreen: React.FC = () => {
         <View style={styles.backgroundTransition}>
           {/* Category Tabs */}
           <CategoryTabs
-            categories={categories}
+            categories={FOOD_CATEGORIES}
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={handleCategoryChange}
           />
 
-          {/* Dish Grid */}
+          {/* Filtered Items Grid */}
           <View style={styles.gridContainer}>
-            <View style={styles.row}>
-              <CoffeeCard 
-                coffee={dishes[0]} 
-                style={styles.coffee} 
-                onAddToCart={handleAddToCart}
-              />
-              <CoffeeCard 
-                coffee={dishes[1]} 
-                style={styles.coffee} 
-                onAddToCart={handleAddToCart}
-              />
-            </View>
-            <View style={styles.row}>
-              <CoffeeCard 
-                coffee={dishes[2]} 
-                style={styles.coffee} 
-                onAddToCart={handleAddToCart}
-              />
-              <CoffeeCard 
-                coffee={dishes[3]} 
-                style={styles.coffee} 
-                onAddToCart={handleAddToCart}
-              />
-            </View>
+            {filteredItems.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Icon name="food-off" size={60} color="#ccc" />
+                <Text style={styles.emptyText}>
+                  {searchText ? 'No items found for your search' : 'No items in this category'}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.itemsGrid}>
+                {filteredItems.map((item, index) => (
+                  <CoffeeCard 
+                    key={item.id}
+                    coffee={item} 
+                    style={styles.coffee} 
+                    onAddToCart={handleAddToCart}
+                    onPress={handleDishPress}
+                  />
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Bottom Padding */}
@@ -377,6 +417,11 @@ const styles = StyleSheet.create({
   gridContainer: {
     paddingHorizontal: 20,
   },
+  itemsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -384,7 +429,20 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   coffee: {
-    flex: 1,
+    width: '48%',
+    marginBottom: 15,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 15,
+    paddingHorizontal: 20,
   },
 });
 
